@@ -1,0 +1,20 @@
+# Dynamic configuration
+http:
+  middlewares:
+    nofloc:
+      headers:
+        customResponseHeaders:
+          Permissions-Policy: "interest-cohort=()"
+
+    trailing-slash:
+      redirectregex:
+        regex: "^(https?://[^/]+/[a-z0-9_]+)$"
+        replacement: "${1}/"
+        permanent: true
+
+tls:
+  certificates:
+    - certFile: "/etc/certs/local-cert.pem"
+      keyFile: "/etc/certs/local-key.pem"
+      stores:
+        - default

@@ -1,0 +1,62 @@
+version: "3.7"
+
+services:
+  drone-server:
+    container_name: drone
+    restart: always
+    depends_on:
+      - drone-agent
+    image: drone/drone:latest
+    volumes:
+      - drone:/var/lib/drone
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - DRONE_DEBUG=false
+      - DRONE_LOGS_TEXT=true
+      - DRONE_LOGS_PRETTY=true
+      - DRONE_LOGS_COLOR=true
+      - DRONE_ADMIN=${DRONE_USERNAME}
+      - DRONE_USER_CREATE=username:${DRONE_USERNAME},admin:true
+      - DRONE_SERVER_PORT=:8002
+      - DRONE_DATABASE_DRIVER=sqlite3
+      - DRONE_GIT_ALWAYS_AUTH=false
+      - DRONE_RPC_SECRET=${DRONE_SECRET}
+      - DRONE_SERVER_HOST=drone.${DOMAIN_NAME}
+      - DRONE_SERVER_PROTO=https
+      - DRONE_TLS_AUTOCERT=false
+      - DRONE_AGENTS_ENABLED=true
+    networks:
+      - proxy
+      - default
+    ports:
+      - 8002:8002
+    labels:
+      - "traefik.docker.network=proxy"
+      - "traefik.enable=true"
+      - "traefik.http.routers.drone-secure.entrypoints=websecure"
+      - "traefik.http.routers.drone-secure.rule=Host(`drone.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.drone-secure.service=drone-secure-svc"
+      - "traefik.http.services.drone-secure-svc.loadbalancer.server.port=8002"
+
+  drone-agent:
+    image: drone/agent:latest
+    restart: always
+    command: agent
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - DRONE_RPC_SERVER=https://drone.${DOMAIN_NAME}
+      - DRONE_RPC_SECRET=${DRONE_SECRET}
+      - DRONE_RUNNER_CAPACITY=2
+    networks:
+      - default
+    deploy:
+      mode: replicated
+      replicas: 2
+
+volumes:
+  drone:
+
+networks:
+  proxy:
+    external: true
