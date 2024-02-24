@@ -10,7 +10,6 @@ services:
       - "traefik.http.routers.whoami.rule=Host(`whoami.${DOMAIN_NAME}`)"
       - "traefik.http.routers.whoami.tls=true"
       - "traefik.http.routers.whoami.entrypoints=websecure"
-      - "traefik.http.routers.whoami.tls.certresolver=letsencrypt"
 
 networks:
   proxy:
