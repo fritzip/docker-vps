@@ -7,15 +7,32 @@ services:
     restart: always
     security_opt:
       - no-new-privileges:true
+    command:
+      - "--global.sendAnonymousUsage=false"
+      - "--api.dashboard=true"
+      - "--providers.docker.endpoint=unix:///var/run/docker.sock"
+      - "--providers.docker.watch=true"
+      - "--providers.docker.exposedByDefault=false"
+      - "--providers.file.filename=/etc/traefik/dynamic.yml"
+      - "--providers.file.watch=true"
+      - "--log.level=DEBUG"
+      - "--log.format=common"
+      - "--entryPoints.web.address=:80"
+      - "--entryPoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entryPoints.web.http.redirections.entryPoint.scheme=https"
+      - "--entryPoints.websecure.http.tls.certResolver=letsencrypt"
+      - "--entryPoints.websecure.address=:443"
+      - "--certificatesResolvers.letsencrypt.acme.email=${USER_EMAIL}"
+      - "--certificatesResolvers.letsencrypt.acme.storage=/etc/traefik/acme.json"
+      - "--certificatesResolvers.letsencrypt.acme.keyType=EC384"
+      # - "--certificatesResolvers.letsencrypt.acme.caServer=https://acme-staging-v02.api.letsencrypt.org/directory"
+      - "--certificatesResolvers.letsencrypt.acme.httpChallenge.entryPoint=web"
     ports:
       - 80:80
       - 443:443
-    environment:
-      - "TRAEFIK_CERTIFICATESRESOLVERS_letsencrypt_ACME_EMAIL=${USER_EMAIL}"
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./traefik-config/traefik.yml:/etc/traefik/traefik.yml:ro
       - ./traefik-config/acme.json:/etc/traefik/acme.json
       - ./traefik-config/dynamic.yml:/etc/traefik/dynamic.yml:ro
       - ./traefik-config/certs:/etc/certs:ro
@@ -28,7 +45,6 @@ services:
       - "traefik.http.middlewares.traefik-auth.basicauth.users=${TRAEFIK_USERNAME}:${TRAEFIK_PASSWORD}"
       - "traefik.http.routers.traefik.middlewares=traefik-auth"
       - "traefik.http.routers.traefik.service=api@internal"
-      - "traefik.http.routers.traefik.tls=true"
 
   error_pages:
     image: ttrafelet/traefik_error_pages
@@ -45,10 +61,8 @@ services:
       - "traefik.http.middlewares.serve-pretty-errors.errors.service=error-pages"
       - "traefik.http.middlewares.serve-pretty-errors.errors.query=/{status}.html"
       - "traefik.http.routers.error-pages.rule=HostRegexp(`{catchall:.*}`)"
-      - "traefik.http.routers.error-pages.entrypoints=websecure"
       - "traefik.http.routers.error-pages.service=error-pages"
       - "traefik.http.routers.error-pages.priority=1"
-      - "traefik.http.routers.error-pages.tls=true"
 
   portainer:
     image: portainer/portainer-ce:latest
@@ -62,11 +76,10 @@ services:
       - proxy
     labels:
       - "traefik.enable=true"
+      - "traefik.http.routers.portainer.entrypoints=websecure"
       - "traefik.http.routers.portainer.rule=Host(`portainer.${DOMAIN_NAME}`)"
       - "traefik.http.routers.portainer.service=portainer"
       - "traefik.http.services.portainer.loadbalancer.server.port=9000"
-      - "traefik.http.routers.portainer.entrypoints=websecure"
-      - "traefik.http.routers.portainer.tls=true"
 
 networks:
   proxy:
