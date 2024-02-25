@@ -40,8 +40,8 @@ services:
       - proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.traefik.rule=Host(`traefik.${DOMAIN_NAME}`)"
       - "traefik.http.routers.traefik.entrypoints=websecure"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.${DOMAIN_NAME}`)"
       - "traefik.http.middlewares.traefik-auth.basicauth.users=${TRAEFIK_USERNAME}:${TRAEFIK_PASSWORD}"
       - "traefik.http.routers.traefik.middlewares=traefik-auth"
       - "traefik.http.routers.traefik.service=api@internal"
@@ -56,11 +56,12 @@ services:
       - proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.http.services.error-pages.loadbalancer.server.port=5000"
+      - "traefik.http.routers.error-pages.entrypoints=websecure"
+      - "traefik.http.routers.error-pages.rule=HostRegexp(`{catchall:.*}`)"
       - "traefik.http.middlewares.serve-pretty-errors.errors.status=400-599"
       - "traefik.http.middlewares.serve-pretty-errors.errors.service=error-pages"
       - "traefik.http.middlewares.serve-pretty-errors.errors.query=/{status}.html"
-      - "traefik.http.routers.error-pages.rule=HostRegexp(`{catchall:.*}`)"
+      - "traefik.http.services.error-pages.loadbalancer.server.port=5000"
       - "traefik.http.routers.error-pages.service=error-pages"
       - "traefik.http.routers.error-pages.priority=1"
 
