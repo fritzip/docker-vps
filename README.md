@@ -20,10 +20,14 @@ htpasswd -n username
 4. Fill the environment variable within the `.env` file with your own values
 5. Generate the local certificates using:
 ```bash
-mkcert -cert-file certs/local-cert.pem -key-file certs/local-key.pem "*.docker.localhost" "*.local"
+mkcert -cert-file traefik-config/certs/local-cert.pem -key-file traefik-config/certs/local-key.pem "*.docker.localhost" "*.local"
 ```
-5. Run `docker-compose up -f docker-compose.traefik -d` to start the services
-6. Go to `https://portainer.yourdomain.com` and create a new admin user
+5. Create a proxy network: 
+```bash
+docker network create proxy
+```
+6. Run `docker-compose up -f docker-compose.traefik -d` to start the services
+7. Go to `https://portainer.yourdomain.com` and create a new admin user
 
 ## Usage
 - Access the Traefik dashboard at `https://traefik.yourdomain.com`
