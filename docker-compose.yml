@@ -89,13 +89,23 @@ services:
     image: drone/drone:2
     container_name: drone
     restart: unless-stopped
-    networks:
-      - proxy
+    depends_on:
+      - traefik
+    environment:
+      - DRONE_SERVER_HOST=drone.${DOMAIN_NAME}
+      - DRONE_SERVER_PROTO=https
+      - DRONE_RPC_SECRET=${DRONE_RPC_SECRET}
+      - DRONE_GITHUB_SERVER=https://github.com
+      - DRONE_GITHUB_CLIENT_ID=${DRONE_GITHUB_CLIENT_ID}
+      - DRONE_GITHUB_CLIENT_SECRET=${DRONE_GITHUB_CLIENT_SECRET}
+      - DRONE_RUNNER_NAME=drone-runner-1
+      - DRONE_RUNNER_NETWORKS=proxy
+      - DRONE_LOGS_DEBUG=true
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./drone-data:/data
-    depends_on:
-      - traefik
+    networks:
+      - proxy
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.drone.entrypoints=websecure"
@@ -109,10 +119,16 @@ services:
     depends_on:
       drone:
         condition: service_started
-    networks:
-      - proxy
+    environment:
+      - DRONE_RPC_PROTO=https
+      - DRONE_RPC_HOST=drone.${DOMAIN_NAME}
+      - DRONE_RPC_SECRET=${DRONE_RPC_SECRET}
+      - DRONE_RUNNER_CAPACITY=4
+      - DRONE_RUNNER_NAME=drone-runner-1
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - proxy
 
 networks:
   proxy:
