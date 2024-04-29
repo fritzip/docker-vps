@@ -15,7 +15,7 @@ services:
       - "--providers.docker.exposedByDefault=false"
       - "--providers.file.filename=/etc/traefik/dynamic.yml"
       - "--providers.file.watch=true"
-      - "--log.level=DEBUG"
+      - "--log.level=INFO"
       - "--log.format=common"
       - "--entryPoints.web.address=:80"
       - "--entryPoints.web.http.redirections.entryPoint.to=websecure"
