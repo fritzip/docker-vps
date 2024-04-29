@@ -1,4 +1,4 @@
 portainer-data/
 *.pem
-./traefik-config/acme.json
+traefik-config/acme.json
 .env

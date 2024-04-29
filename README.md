@@ -30,8 +30,9 @@ This is a base config for a VPS running docker images. It includes :
     ```bash
     docker network create proxy
     ```
-8. Ensure that acme.json has the correct permissions
+8. Ensure that acme.json exists and has the correct permissions
     ```bash
+    touch traefik-config/acme.json
     chmod 600 traefik-config/acme.json
     ``` 
 9. Run `docker-compose up -d` to start the services
