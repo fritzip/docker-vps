@@ -12,22 +12,30 @@ This is a base config for a VPS running docker images. It includes :
 
 ## Installation
 1. Clone this repository on your VPS
-2. Generate an encrypted password to protect the access to the Traefik dashboard using :
-```bash
-htpasswd -n username
-```
-3. Copy the generated password and paste it in the `.env` file in `TRAEFIK_PASSWORD` variable
-4. Fill the environment variable within the `.env` file with your own values
-5. Generate the local certificates using:
-```bash
-mkcert -cert-file traefik-config/certs/local-cert.pem -key-file traefik-config/certs/local-key.pem "*.docker.localhost" "*.local"
-```
-5. Create a proxy network: 
-```bash
-docker network create proxy
-```
-6. Run `docker-compose up -f docker-compose.traefik -d` to start the services
-7. Go to `https://portainer.yourdomain.com` and create a new admin user
+2. Copy the `.env.example` file to `.env` and fill the environment variables with your own values
+    ```bash
+    cp .env.example .env
+    ```
+3. Generate a password for the Traefik dashboard using (replace `<username>` with your chosen traefik username):
+    ```bash
+    htpasswd -n <username>
+    ```
+4. Copy the generated password and paste it in the `.env` file in `TRAEFIK_PASSWORD` variable
+5. Fill the environment variable within the `.env` file with your own values
+6. Generate the local certificates using:
+    ```bash
+    mkcert -cert-file traefik-config/certs/local-cert.pem -key-file traefik-config/certs/local-key.pem "*.docker.localhost" "*.local"
+    ```
+7. Create a docker network with name `proxy` to allow the services to communicate with each other: 
+    ```bash
+    docker network create proxy
+    ```
+8. Ensure that acme.json has the correct permissions
+    ```bash
+    chmod 600 traefik-config/acme.json
+    ``` 
+9. Run `docker-compose up -d` to start the services
+10. Go to `https://portainer.yourdomain.com` and create a new admin user
 
 ## Usage
 - Access the Traefik dashboard at `https://traefik.yourdomain.com`
